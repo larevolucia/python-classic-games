@@ -1,7 +1,5 @@
 """Hangman game"""
 
-#!/usr/bin/env python3
-
 import random
 
 
