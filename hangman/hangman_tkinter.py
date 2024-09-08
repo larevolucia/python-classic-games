@@ -130,7 +130,7 @@ def start_game(word):
                 guess_entry.config(state='disabled')  # Disable input after game over
                 submit_button.config(state='disabled')  # Disable submit button
         else:
-            messagebox.showinfo("Invalid input", "Please enter a valid single letter.")
+            messagebox.showinfo("Invalid input", "Please enter a **single letter** that you **haven't guessed before**.")
 
     # Add a button to submit the guess
     submit_button = Button(root, text="Submit Guess", command=submit_guess, font=h2)
