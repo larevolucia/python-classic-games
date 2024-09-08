@@ -136,21 +136,6 @@ def start_game(word):
     submit_button = Button(root, text="Submit Guess", command=submit_guess, font=h2)
     submit_button.pack(pady=10)
 
-    # while True:
-    #     key = get_guess(guessed_letters)
-    #     guessed_letters.append(key)
-
-    #     guess_left, guess_progress = check_guess(word, key, guess_left, guess_progress, image_label, images) #pylint:disable=line-too-long
-
-    #     guessed_letters_list = ", ".join(guessed_letters)
-
-    #     label_progress.config(text=f"{guess_progress}", font=h2)
-    #     letter_attempts.config(text=f"Guessed letters: {guessed_letters_list}", font=h3)
-    #     max_errors.config(text=f"Max Errors: {guess_left}", font=h3)
-
-    #     if check_game_over(word, guess_progress, guess_left):
-    #         break
-
     # Start the Tkinter event loop
     root.mainloop()
 
