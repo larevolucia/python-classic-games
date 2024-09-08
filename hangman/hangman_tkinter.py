@@ -2,9 +2,17 @@
 
 import random
 
-from tkinter import Tk, Label, simpledialog, messagebox
+from tkinter import Tk, Label, simpledialog, messagebox, font
 
-# from PIL import Image, ImageTk
+from PIL import Image, ImageTk #pylint: disable=import-error
+
+# Check if PIL is working
+# try:
+#     img = Image.new('RGB', (100, 100), color='red')
+#     img.show()
+#     print("Pillow is working!")
+# except ImportError as e:
+#     print(f"Import error: {e}")
 
 
 def select_word():
@@ -24,7 +32,7 @@ def initialize_game(word):
 def get_guess(guessed_letters):
     """Get a valid guess from the player."""
     while True:
-        key = simpledialog.askstring("Guess", "Guess a letter: ")
+        key = simpledialog.askstring("Guess", "Guess a letter: ").lower()
         if key.isalpha() and len(key) == 1:
             if key not in guessed_letters:
                 return key
@@ -56,7 +64,7 @@ def check_game_over(word, guess_progress, guess_left):
     return False
 
 
-def check_guess(word, key, guess_left, guess_progress):
+def check_guess(word, key, guess_left, guess_progress, image_label, images):
     """Checks user guess"""
     if key in word:
         messagebox.showinfo("Correct guess", f"The word contains {key}")
@@ -64,6 +72,7 @@ def check_guess(word, key, guess_left, guess_progress):
     else:
         messagebox.showinfo("Wrong guess", f"The word doesn't contain the letter {key}")
         guess_left -= 1
+        image_label.config(image=images[7 - guess_left])
         new_guess_progress = guess_progress
 
     return guess_left, new_guess_progress
@@ -73,36 +82,49 @@ def start_game(word):
     """Start and manage the game."""
     guess_left, guess_progress, guessed_letters = initialize_game(word)
 
+
     # Create the main window
     root = Tk()
     root.title("Hangman")
+    # Define a custom font
+    h1 = font.Font(family="Helvetica", size=14, weight="bold")
+    h2 = font.Font(family="Helvetica", size=14)
+    h3 = font.Font(family="Helvetica", size=12)
+
+    # Load all the hangman images
+    images = [ImageTk.PhotoImage(Image.open(f"img/img_{i}.jpg")) for i in range(8)]
 
     # Create and place the widgets
     Label(
         root,
-        text="Can you guess what word I'm thinking of?",
+        text="Can you guess the word?", font=h1
     ).pack(pady=10)
 
-    label_progress = Label(root, text=f"{guess_progress}")
+    label_progress = Label(root, text=f"{guess_progress}", font=h2)
     label_progress.pack(pady=5)
 
-    max_errors = Label(root, text=f"Max Errors: {guess_left}")
+    max_errors = Label(root, text=f"Max Errors: {guess_left}", font=h2)
     max_errors.pack(pady=10)
 
-    letter_attempts = Label(root, text="Guessed letters: ...")
+    letter_attempts = Label(root, text="Guessed letters: ...", font=h2)
     letter_attempts.pack(pady=10)
+
+    # Create an image label and display the first image
+    image_label = Label(root)
+    image_label.pack(pady=10)
+    image_label.config(image=images[0], height=480, width=768)  # Start with the first image (full state)
 
     while True:
         key = get_guess(guessed_letters)
         guessed_letters.append(key)
 
-        guess_left, guess_progress = check_guess(word, key, guess_left, guess_progress)
+        guess_left, guess_progress = check_guess(word, key, guess_left, guess_progress, image_label, images) #pylint:disable=line-too-long
 
         guessed_letters_list = ", ".join(guessed_letters)
 
-        label_progress.config(text=f"{guess_progress}")
-        letter_attempts.config(text=f"Guessed letters: {guessed_letters_list}")
-        max_errors.config(text=f"Max Errors: {guess_left}")
+        label_progress.config(text=f"{guess_progress}", font=h2)
+        letter_attempts.config(text=f"Guessed letters: {guessed_letters_list}", font=h3)
+        max_errors.config(text=f"Max Errors: {guess_left}", font=h3)
 
         if check_game_over(word, guess_progress, guess_left):
             break
