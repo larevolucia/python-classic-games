@@ -2,18 +2,9 @@
 
 import random
 
-from tkinter import Tk, Label, simpledialog, messagebox, font
+from tkinter import Tk, Label, simpledialog, messagebox, font, Entry, Button
 
 from PIL import Image, ImageTk #pylint: disable=import-error
-
-# Check if PIL is working
-# try:
-#     img = Image.new('RGB', (100, 100), color='red')
-#     img.show()
-#     print("Pillow is working!")
-# except ImportError as e:
-#     print(f"Import error: {e}")
-
 
 def select_word():
     """Select a random word from a list of possible words."""
@@ -114,20 +105,51 @@ def start_game(word):
     image_label.pack(pady=10)
     image_label.config(image=images[0], height=480, width=768)  # Start with the first image (full state)
 
-    while True:
-        key = get_guess(guessed_letters)
-        guessed_letters.append(key)
+    # Add an Entry widget for user input
+    guess_entry = Entry(root, font=h2)
+    guess_entry.pack(pady=10)
 
-        guess_left, guess_progress = check_guess(word, key, guess_left, guess_progress, image_label, images) #pylint:disable=line-too-long
+    # Function to handle guess submission
+    def submit_guess():
+        key = guess_entry.get().lower()
+        guess_entry.delete(0, 'end')  # Clear the entry field after submission
+        
+        if key.isalpha() and len(key) == 1 and key not in guessed_letters:
+            guessed_letters.append(key)
+            nonlocal guess_left, guess_progress  # Access variables from outer scope
 
-        guessed_letters_list = ", ".join(guessed_letters)
+            guess_left, guess_progress = check_guess(word, key, guess_left, guess_progress, image_label, images)
 
-        label_progress.config(text=f"{guess_progress}", font=h2)
-        letter_attempts.config(text=f"Guessed letters: {guessed_letters_list}", font=h3)
-        max_errors.config(text=f"Max Errors: {guess_left}", font=h3)
+            guessed_letters_list = ", ".join(guessed_letters)
 
-        if check_game_over(word, guess_progress, guess_left):
-            break
+            label_progress.config(text=f"{guess_progress}", font=h2)
+            letter_attempts.config(text=f"Guessed letters: {guessed_letters_list}", font=h3)
+            max_errors.config(text=f"Max Errors: {guess_left}", font=h3)
+
+            if check_game_over(word, guess_progress, guess_left):
+                guess_entry.config(state='disabled')  # Disable input after game over
+                submit_button.config(state='disabled')  # Disable submit button
+        else:
+            messagebox.showinfo("Invalid input", "Please enter a valid single letter.")
+
+    # Add a button to submit the guess
+    submit_button = Button(root, text="Submit Guess", command=submit_guess, font=h2)
+    submit_button.pack(pady=10)
+
+    # while True:
+    #     key = get_guess(guessed_letters)
+    #     guessed_letters.append(key)
+
+    #     guess_left, guess_progress = check_guess(word, key, guess_left, guess_progress, image_label, images) #pylint:disable=line-too-long
+
+    #     guessed_letters_list = ", ".join(guessed_letters)
+
+    #     label_progress.config(text=f"{guess_progress}", font=h2)
+    #     letter_attempts.config(text=f"Guessed letters: {guessed_letters_list}", font=h3)
+    #     max_errors.config(text=f"Max Errors: {guess_left}", font=h3)
+
+    #     if check_game_over(word, guess_progress, guess_left):
+    #         break
 
     # Start the Tkinter event loop
     root.mainloop()
