@@ -6,5 +6,5 @@
 1. Guess the number (Tkinter)
 2. Quiz (Tkinter)
 3. Tic Tac Toe (Tkinter)
-4. Hangman (Tkinter)
+4. Hangman (Tkinter, PIL)
 5. Space invaders (Pygames)
