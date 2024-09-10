@@ -6,8 +6,8 @@
 Udemy courses were used as base, but I modified the code provided in the courses and added new functionality to the games. 
 
 ### List of Courses
-    1. [Make Simple Games with Python] (https://www.udemy.com/course/make-simple-games-with-python/?couponCode=JUST4U02223)
-    2. [Create Space Invaders with Python Pygame] (https://www.udemy.com/course/create-space-invaders-with-python-pygame/)
+    1. [Make Simple Games with Python](https://www.udemy.com/course/make-simple-games-with-python/?couponCode=JUST4U02223)
+    2. [Create Space Invaders with Python Pygame](https://www.udemy.com/course/create-space-invaders-with-python-pygame/)
 
 ## Game List
 
