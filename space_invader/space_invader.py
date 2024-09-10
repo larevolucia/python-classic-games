@@ -16,6 +16,8 @@ ENEMY_SPEED_Y = 40
 NUM_OF_ENEMIES = 6
 FONT_SIZE = 32
 WHITE = (255, 255, 255)
+INITIAL_NUM_ENEMIES = 6
+ENEMY_INCREMENT_THRESHOLD = 5  # Add more enemies every 5 points
 
 # Initialize the game
 pygame.init() # pylint: disable=no-member
@@ -81,6 +83,16 @@ def play_collision_sound(settings):
     """Play the collision sound effect if sound is enabled."""
     if settings["is_sound_on"]:
         explosion_sound.play()
+
+def is_collision(entity1_x, entity1_y, entity2_x, entity2_y, threshold=27):
+    """Check if two entities have collided based on their positions."""
+    distance = math.sqrt(math.pow(entity1_x - entity2_x, 2) + math.pow(entity1_y - entity2_y, 2))
+    return distance < threshold
+
+def show_score(score_value):
+    """Display the current score on the screen."""
+    score = font.render(f"Score: {score_value}", True, WHITE)
+    screen.blit(score, (10, 10))
 
 # Fonts
 font = pygame.font.Font('freesansbold.ttf', FONT_SIZE)
@@ -150,29 +162,30 @@ class Enemy:
         """draw enemy"""
         screen.blit(self.image, (self.x, self.y))
 
-def is_collision(entity1_x, entity1_y, entity2_x, entity2_y, threshold=27):
-    """Check if two entities have collided based on their positions."""
-    distance = math.sqrt(math.pow(entity1_x - entity2_x, 2) + math.pow(entity1_y - entity2_y, 2))
-    return distance < threshold
+def increase_difficulty(score, enemies, last_enemy_increase_score):
+    """Add more enemies based on the score."""
+    # Increase enemies only if the score crosses a threshold and enemies haven't been added yet
+    if score % ENEMY_INCREMENT_THRESHOLD == 0 and score > last_enemy_increase_score:
+        for _ in range(2):  # Increase by 2 enemies for each threshold reached
+            enemies.append(Enemy())
+        last_enemy_increase_score = score  # Update the last score at which enemies were added
+    return last_enemy_increase_score  # Return the updated value
 
-def show_score(score_value):
-    """Display the current score on the screen."""
-    score = font.render(f"Score: {score_value}", True, WHITE)
-    screen.blit(score, (10, 10))
+
 
 # Game Over
 game_state = {
     "is_game_over": False
 }
 
-
-def show_game_over():
+def show_game_over(score):
     """Display Game Over message."""
     game_over_font = pygame.font.Font('freesansbold.ttf', 64)
     game_over_text = game_over_font.render("GAME OVER", True, (255, 0, 0))
+    final_score_font = pygame.font.Font('freesansbold.ttf', 42)
+    final_score_text = final_score_font.render(f"Score: {score}", True, WHITE)
     screen.blit(game_over_text, (200, 250))
-
-
+    screen.blit(final_score_text, (300, 350))
 
 # Main Game Loop
 def game_loop():
@@ -181,8 +194,10 @@ def game_loop():
     running = True
     player = Player()
     bullet = Bullet()
-    enemies = [Enemy() for _ in range(NUM_OF_ENEMIES)]
+    enemies = [Enemy() for _ in range(INITIAL_NUM_ENEMIES)]
     score_value = 0
+    last_enemy_increase_score = 0
+
 
     while running:
         screen.fill("black")
@@ -218,12 +233,15 @@ def game_loop():
                     player.x_change = 0
         # Check for Game Over
         if game_state["is_game_over"]:
-            show_game_over()  # Display Game Over message
+            show_game_over(score_value)  # Display Game Over message
             pygame.display.update()  # Update the screen with the message
             continue  # Skip the rest of the game logic when the game is over
+
+        # Increase difficulty by adding more enemies when the player reaches a new threshold
+        last_enemy_increase_score = increase_difficulty(score_value, enemies, last_enemy_increase_score) # pylint: disable=line-too-long
         player.move()
         bullet.move()
-
+        # Check for bullet and enemy collision
         for enemy in enemies:
             enemy.move()
             if is_collision(enemy.x, enemy.y, bullet.x, bullet.y):
@@ -236,6 +254,7 @@ def game_loop():
             enemy.draw()
             # Check if enemy hits the player
             if is_collision(player.x, player.y, enemy.x, enemy.y, threshold=40):
+                play_collision_sound(sounds_settings)
                 game_state["is_game_over"] = True
                 break  # End the loop early since we only need one collision to end the game
 
