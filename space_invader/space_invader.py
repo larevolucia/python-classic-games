@@ -53,6 +53,7 @@ sound_on = pygame.image.load('img/sound.png')
 sound_off = pygame.image.load('img/no-sound.png')
 bullet_sound = mixer.Sound('audio/laser.wav')
 explosion_sound = mixer.Sound('audio/explosion.wav')
+game_over_sound = mixer.Sound('audio/game-over.wav')
 
 music_settings = {
     "is_music_on": True
@@ -83,6 +84,11 @@ def play_collision_sound(settings):
     """Play the collision sound effect if sound is enabled."""
     if settings["is_sound_on"]:
         explosion_sound.play()
+
+def play_game_over_sound(settings):
+    """Play the collision sound effect if sound is enabled."""
+    if settings["is_sound_on"]:
+        game_over_sound.play()
 
 def is_collision(entity1_x, entity1_y, entity2_x, entity2_y, threshold=27):
     """Check if two entities have collided based on their positions."""
@@ -169,9 +175,11 @@ def increase_difficulty(score, enemies, last_enemy_increase_score):
         for _ in range(2):  # Increase by 2 enemies for each threshold reached
             enemies.append(Enemy())
         last_enemy_increase_score = score  # Update the last score at which enemies were added
+    if score % 10 == 0 and score > last_enemy_increase_score:  # Every 10 points, increase speed
+        for enemy in enemies:
+            enemy.x_change += 1  # Increase the horizontal speed
+        last_enemy_increase_score = score
     return last_enemy_increase_score  # Return the updated value
-
-
 
 # Game Over
 game_state = {
@@ -254,7 +262,7 @@ def game_loop():
             enemy.draw()
             # Check if enemy hits the player
             if is_collision(player.x, player.y, enemy.x, enemy.y, threshold=40):
-                play_collision_sound(sounds_settings)
+                play_game_over_sound(sounds_settings)
                 game_state["is_game_over"] = True
                 break  # End the loop early since we only need one collision to end the game
 
