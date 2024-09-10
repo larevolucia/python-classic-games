@@ -103,7 +103,7 @@ def start_game(word):
     # Create an image label and display the first image
     image_label = Label(root)
     image_label.pack(pady=10)
-    image_label.config(image=images[0], height=480, width=768)  # Start with the first image (full state)
+    image_label.config(image=images[0], height=480, width=768)
 
     # Add an Entry widget for user input
     guess_entry = Entry(root, font=h2)
