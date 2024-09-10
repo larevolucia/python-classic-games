@@ -150,15 +150,29 @@ class Enemy:
         """draw enemy"""
         screen.blit(self.image, (self.x, self.y))
 
-def is_collision(enemy, bullet):
-    """Check if a collision occurred between an enemy and the bullet."""
-    distance = math.sqrt((math.pow(enemy.x - bullet.x, 2)) + (math.pow(enemy.y - bullet.y, 2)))
-    return distance < 27
+def is_collision(entity1_x, entity1_y, entity2_x, entity2_y, threshold=27):
+    """Check if two entities have collided based on their positions."""
+    distance = math.sqrt(math.pow(entity1_x - entity2_x, 2) + math.pow(entity1_y - entity2_y, 2))
+    return distance < threshold
 
 def show_score(score_value):
     """Display the current score on the screen."""
     score = font.render(f"Score: {score_value}", True, WHITE)
     screen.blit(score, (10, 10))
+
+# Game Over
+game_state = {
+    "is_game_over": False
+}
+
+
+def show_game_over():
+    """Display Game Over message."""
+    game_over_font = pygame.font.Font('freesansbold.ttf', 64)
+    game_over_text = game_over_font.render("GAME OVER", True, (255, 0, 0))
+    screen.blit(game_over_text, (200, 250))
+
+
 
 # Main Game Loop
 def game_loop():
@@ -173,6 +187,8 @@ def game_loop():
     while running:
         screen.fill("black")
         screen.blit(background, (0, 0))
+        # Check if the game is over
+
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT: # pylint: disable=no-member
@@ -200,13 +216,17 @@ def game_loop():
             if event.type == pygame.KEYUP: # pylint: disable=no-member
                 if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT: # pylint: disable=no-member
                     player.x_change = 0
-
+        # Check for Game Over
+        if game_state["is_game_over"]:
+            show_game_over()  # Display Game Over message
+            pygame.display.update()  # Update the screen with the message
+            continue  # Skip the rest of the game logic when the game is over
         player.move()
         bullet.move()
 
         for enemy in enemies:
             enemy.move()
-            if is_collision(enemy, bullet):
+            if is_collision(enemy.x, enemy.y, bullet.x, bullet.y):
                 play_collision_sound(sounds_settings)
                 bullet.state = "ready"
                 bullet.y = PLAYER_START_Y
@@ -214,6 +234,10 @@ def game_loop():
                 enemy.x = random.randint(0, 736)
                 enemy.y = random.randint(50, 150)
             enemy.draw()
+            # Check if enemy hits the player
+            if is_collision(player.x, player.y, enemy.x, enemy.y, threshold=40):
+                game_state["is_game_over"] = True
+                break  # End the loop early since we only need one collision to end the game
 
         player.draw()
         show_score(score_value)
