@@ -1,355 +1,229 @@
-"""Recriating Space Invaders game using Python"""
-
-
-
+"""space invader game"""
 import math
 import random
-
-
-
-
-import pygame #pylint:disable=import-error
-
-
-
-from pygame import mixer #pylint:disable=import-error
-
-
-
-
-# initialize the game
-pygame.init()
-
-
-
-
-# create screen
-
-
-
-screen = pygame.display.set_mode((800, 600))
-
-
-
-
-# load background
-
-
-
-background = pygame.image.load('space_invader/img/background.png')
-
-
-# Initialize sound settings
-IS_SOUND_ON = True
-
-
-
-# load sound
-
-
-
-mixer.music.load('space_invader/audio/background.wav')
-
-
-
-mixer.music.play(-1)
-
-
-sound_on = pygame.image.load('space_invader/img/sound.png')
-
-sound_off = pygame.image.load('space_invader/img/no-sound.png')
-
-
-def toggle_audio():
-
-    """toggle sound on and off"""
-
-    global IS_SOUND_ON
-
-    if IS_SOUND_ON:
-
-        pygame.mixer.music.set_volume(0.0)  # Mute the sound
-        IS_SOUND_ON = False
-
-    else:
-
-        pygame.mixer.music.set_volume(1.0)  # Unmute the sound
-        IS_SOUND_ON = True
-
-
-def draw_sound_button():
-
-    """initialize the sound buttons"""
-
-    if IS_SOUND_ON:
-
-        screen.blit(sound_on, (730, 10))
-
-    else:
-
-        screen.blit(sound_off, (730, 10))
-
-# caption and icon
-
-
-
-pygame.display.set_caption("Space Invader")
-
-
-
-icon = pygame.image.load('space_invader/img/ufo.png')
-
-pygame.display.set_icon(icon)
-
-
-
-
-# player image
-
-
-
-playerImg = pygame.image.load('space_invader/img/player.png')
-
-
-
-PLAYER_X = 370
-
-
-
-PLAYER_Y = 480
-
-
-
-PLAYER_X_CHANGE = 0
-
-
-
-
-def player(x, y):
-
-
-
-    """Initialize the player"""
-
-
-
-    screen.blit(playerImg, (x, y))
-
-
-
-
-# score
-
-# Fire - The bullet is currently moving
-
-bullet_Img = pygame.image.load('space_invader/img/bullet.png')
-bullet_X = 0
-bullet_Y = 480
-bullet_X_change = 0
-bullet_Y_change = 10
-bullet_state = "ready"
-
-def fire_bullet(x, y):
-    global bullet_state
-    bullet_state = "fire"
-    screen.blit(bullet_Img, (x + 16, y + 10))
-
-def isColission(enemyX, enemyY, bulletX, bulletY):
-    distance = math.sqrt(math.pow(enemyX - bulletX, 2) + (math.pow(enemyY - bulletY, 2)))
-    if distance < 27:
-        return True
-    else:
-        return False
-
-# enemies
-enemy_img = []
-enemy_X = []
-enemy_Y= []
-enemy_X_change = []
-enemy_Y_change = []
+import pygame  # pylint: disable=import-error
+from pygame import mixer  # pylint: disable=import-error
+
+# Constants
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+PLAYER_START_X = 380
+PLAYER_START_Y = 480
+PLAYER_SPEED = 5
+BULLET_SPEED = 10
+ENEMY_SPEED_X = 4
+ENEMY_SPEED_Y = 40
 NUM_OF_ENEMIES = 6
-
-for i in range(NUM_OF_ENEMIES):
-    enemy_img.append(pygame.image.load('space_invader/img/enemy.png'))
-    enemy_X.append(random.randint(0, 736))
-    enemy_Y.append(random.randint(50, 150))
-    enemy_X_change.append(4)
-    enemy_Y_change.append(40)
-
-def enemy(x, y, i):
-    """display enemies"""
-    screen.blit(enemy_img[i], (x, y))
-
-SCORE_VALUE = 0
-
-
-
-font = pygame.font.Font('freesansbold.ttf', 32)
-
-
-SCORE_X = 10
-
-
-SCORE_Y = 10
-
-
-
-def show_score(x,y):
-
-
-    """render the score"""
-
-
-    score = font.render("Score: " + str(SCORE_VALUE), True, (255, 255, 255))
-
-
-
-    screen.blit(score, (x , y))
-
-
-
-clock = pygame.time.Clock()
-
-
-
-RUNNING = True
-
-
-
-
-
-while RUNNING:
-
-
-
-
-    # background-color
-
-
-
-    screen.fill("black")
-
-
-
-
-    #background-image
-
-
-
-    screen.blit(background, (0,0))
-
-
-
-
-    # pygame.QUIT event means the user clicked X to close your window
-
-
-
-
-    for event in pygame.event.get():
-
-
-
-
-        if event.type == pygame.QUIT:
-
-
-
-            RUNNING = False
-
-
-        # Handle mouse clicks to toggle sound
-
-        if event.type == pygame.MOUSEBUTTONDOWN:
-
-            mouse_x, mouse_y = event.pos
-
-            if 750 <= mouse_x <= 750 + sound_on.get_width() and 10 <= mouse_y <= 10 + sound_on.get_height():
-                toggle_audio()
-
-
-        # handle player input
-
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_LEFT:
-                PLAYER_X_CHANGE = -5
-            if event.key == pygame.K_RIGHT:
-                PLAYER_X_CHANGE = 5
-            if event.key == pygame.K_SPACE:
-                if bullet_state is "ready":
-                    bullet_sound = mixer.Sound('space_invader/audio/laser.wav')
-                    bullet_sound.play()
-                    #get coordinates
-                    bullet_X = PLAYER_X
-                    fire_bullet(bullet_X, bullet_Y)
-            if event.type == pygame.KEYUP:
-                if event.key == pygame.K_LEFT or pygame.K_RIGHT:
-                    PLAYER_X_CHANGE = 0
-
-              
-    # RENDER YOUR GAME HERE
-    PLAYER_X += PLAYER_X_CHANGE
-    if PLAYER_X <= 0:
-        PLAYER_X = 0
-    elif PLAYER_X >= 736:
-        PLAYER_X = 736
-
-    #Enemy movement
-    for i in range(NUM_OF_ENEMIES):
-        enemy_X[i] += enemy_X_change[i]
-        if enemy_X[i] <= 0:
-            enemy_X_change[i] = 4
-            enemy_Y[i] += enemy_Y_change[i]
-        elif enemy_X[i] >= 736:
-            enemy_X_change[i] = -4
-            enemy_Y[i] += enemy_Y_change[i]
-        enemy(enemy_X[i], enemy_Y[i], i)
-
-        #collision
-
-        collision = isColission(enemy_X[i], enemy_Y[i], bullet_X, bullet_Y)
-        if collision:
-            explosionSound = mixer.Sound('space_invader/audio/explosion.wav')
-            explosionSound.play()
-            bullet_Y = 480
-            bullet_state = "ready"
-            SCORE_VALUE += 1
-            enemy_X[i] = random.randint(0, 736)
-            enemy_Y[i] = random.randint(50, 250)
-
-    # Bullet movement
-    if bullet_Y <= 0:
-        bullet_Y = 400
-        bullet_state = "ready"
-    
-    if bullet_state is "fire":
-        fire_bullet(bullet_X, bullet_Y)
-        bullet_Y -= bullet_Y_change
-
-    # Draw the sound button
-
-    draw_sound_button()
-
-
-    # Draw Player
-
-    player(PLAYER_X, PLAYER_Y)
-
-
-    # Show Score
-
-    show_score(SCORE_X, SCORE_Y)
-
-    pygame.display.update()
-
-
-
-
-
-    clock.tick(60)  # limits FPS to 60
-
-
-
-
-
-pygame.quit()
+FONT_SIZE = 32
+WHITE = (255, 255, 255)
+
+# Initialize the game
+pygame.init() # pylint: disable=no-member
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("Space Invader")
+icon = pygame.image.load('img/ufo.png')
+pygame.display.set_icon(icon)
+background = pygame.image.load('img/background.png')
+
+# Sound settings
+mixer.music.load('audio/background.wav')
+mixer.music.play(-1)
+music_on = pygame.image.load('img/music.png')
+music_off = pygame.image.load('img/music-off.png')
+
+def toggle_music(settings):
+    """Toggle sound on and off."""
+    if settings["is_music_on"]:
+        pygame.mixer.music.set_volume(0.0)  # Mute the sound
+    else:
+        pygame.mixer.music.set_volume(1.0)  # Unmute the sound
+    settings["is_music_on"] = not settings["is_music_on"]
+
+def draw_music_button(settings):
+    """Draw the sound toggle button."""
+    if settings["is_music_on"]:
+        screen.blit(music_on, (730, 10))
+    else:
+        screen.blit(music_off, (730, 10))
+
+# Define sound effects
+sound_on = pygame.image.load('img/sound.png')
+sound_off = pygame.image.load('img/no-sound.png')
+bullet_sound = mixer.Sound('audio/laser.wav')
+explosion_sound = mixer.Sound('audio/explosion.wav')
+
+music_settings = {
+    "is_music_on": True
+    }
+sounds_settings = {
+    "is_sound_on": True
+}
+
+
+# Toggle sound effects
+def toggle_sound(settings):
+    """Toggle sound on and off."""
+    settings["is_sound_on"] = not settings["is_sound_on"]
+
+def draw_sound_button(settings):
+    """Draw the sound toggle button."""
+    if settings["is_sound_on"]:
+        screen.blit(sound_on, (670, 10))
+    else:
+        screen.blit(sound_off, (670, 10))
+
+def play_bullet_sound(settings):
+    """Play the bullet sound effect if sound is enabled."""
+    if settings["is_sound_on"]:
+        bullet_sound.play()
+
+def play_collision_sound(settings):
+    """Play the collision sound effect if sound is enabled."""
+    if settings["is_sound_on"]:
+        explosion_sound.play()
+
+# Fonts
+font = pygame.font.Font('freesansbold.ttf', FONT_SIZE)
+
+# Classes
+class Player:
+    """creates player"""
+    def __init__(self):
+        self.image = pygame.image.load('img/player.png')
+        self.x = PLAYER_START_X
+        self.y = PLAYER_START_Y
+        self.x_change = 0
+
+    def move(self):
+        """move player"""
+        self.x += self.x_change
+        self.x = max(0, min(self.x, SCREEN_WIDTH - 64))  # Ensure player stays on screen
+
+    def draw(self):
+        """draws the player"""
+        screen.blit(self.image, (self.x, self.y))
+
+class Bullet:
+    """draws and defines fire event and movement"""
+    def __init__(self):
+        self.image = pygame.image.load('img/bullet.png')
+        self.x = 0
+        self.y = PLAYER_START_Y
+        self.y_change = BULLET_SPEED
+        self.state = "ready"
+
+    def fire(self, x):
+        """fire bullet"""
+        if self.state == "ready":
+            self.x = x
+            self.state = "fire"
+
+    def move(self):
+        """bullet movement"""
+        if self.state == "fire":
+            screen.blit(self.image, (self.x + 16, self.y + 10))
+            self.y -= self.y_change
+        if self.y <= 0:
+            self.state = "ready"
+            self.y = PLAYER_START_Y
+
+class Enemy:
+    """creates enemies"""
+    def __init__(self):
+        self.image = pygame.image.load('img/enemy.png')
+        self.x = random.randint(0, 736)
+        self.y = random.randint(50, 150)
+        self.x_change = ENEMY_SPEED_X
+        self.y_change = ENEMY_SPEED_Y
+
+    def move(self):
+        """enemy movement"""
+        self.x += self.x_change
+        if self.x <= 0:
+            self.x_change = ENEMY_SPEED_X
+            self.y += self.y_change
+        elif self.x >= 736:
+            self.x_change = -ENEMY_SPEED_X
+            self.y += self.y_change
+
+    def draw(self):
+        """draw enemy"""
+        screen.blit(self.image, (self.x, self.y))
+
+def is_collision(enemy, bullet):
+    """Check if a collision occurred between an enemy and the bullet."""
+    distance = math.sqrt((math.pow(enemy.x - bullet.x, 2)) + (math.pow(enemy.y - bullet.y, 2)))
+    return distance < 27
+
+def show_score(score_value):
+    """Display the current score on the screen."""
+    score = font.render(f"Score: {score_value}", True, WHITE)
+    screen.blit(score, (10, 10))
+
+# Main Game Loop
+def game_loop():
+    """create game loop"""
+    clock = pygame.time.Clock()
+    running = True
+    player = Player()
+    bullet = Bullet()
+    enemies = [Enemy() for _ in range(NUM_OF_ENEMIES)]
+    score_value = 0
+
+    while running:
+        screen.fill("black")
+        screen.blit(background, (0, 0))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: # pylint: disable=no-member
+                running = False
+            if event.type == pygame.MOUSEBUTTONDOWN: # pylint: disable=no-member
+                mouse_x, mouse_y = event.pos
+                if 730 <= mouse_x <= 730 + sound_on.get_width() and 10 <= mouse_y <= 10 + sound_on.get_height(): # pylint: disable=line-too-long
+                    toggle_music(music_settings)
+            if event.type == pygame.MOUSEBUTTONDOWN: # pylint: disable=no-member
+                mouse_x, mouse_y = event.pos
+                if 670 <= mouse_x <= 670 + sound_on.get_width() and 10 <= mouse_y <= 10 + sound_on.get_height(): # pylint: disable=line-too-long
+                    toggle_sound(sounds_settings)
+
+            # Player movement
+            if event.type == pygame.KEYDOWN: # pylint: disable=no-member
+                if event.key == pygame.K_LEFT: # pylint: disable=no-member
+                    player.x_change = -PLAYER_SPEED
+                if event.key == pygame.K_RIGHT: # pylint: disable=no-member
+                    player.x_change = PLAYER_SPEED
+                if event.key == pygame.K_SPACE: # pylint: disable=no-member
+                    if bullet.state == "ready":
+                        bullet.fire(player.x)
+                        play_bullet_sound(sounds_settings)
+
+            if event.type == pygame.KEYUP: # pylint: disable=no-member
+                if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT: # pylint: disable=no-member
+                    player.x_change = 0
+
+        player.move()
+        bullet.move()
+
+        for enemy in enemies:
+            enemy.move()
+            if is_collision(enemy, bullet):
+                play_collision_sound(sounds_settings)
+                bullet.state = "ready"
+                bullet.y = PLAYER_START_Y
+                score_value += 1
+                enemy.x = random.randint(0, 736)
+                enemy.y = random.randint(50, 150)
+            enemy.draw()
+
+        player.draw()
+        show_score(score_value)
+        draw_music_button(music_settings)
+        draw_sound_button(sounds_settings)
+
+        pygame.display.update()
+        clock.tick(60)
+
+    pygame.quit() # pylint: disable=no-member
+
+# Start the game
+game_loop()
